@@ -32,6 +32,18 @@ def click_table_button(addr, button_num):
     button_elem.click()
     sleep(4)  # Wait for table to update (adjust time as necessary)
     click_im_human_button(driver)
+    sleep(4)
+    i=1
+    while(i!=5):
+        sleep(4)
+        click_table_button2(driver,i)
+        i+=1
+
+
+def click_table_button2(driver,button_numup):
+    button_elem = driver.find_element(By.CSS_SELECTOR, f"a[href='#{button_numup}']")
+    button_elem.click()
+    sleep(4)  # Wait for table to update (adjust time as necessary)
 
 def save_links_to_file(links):
     import os
