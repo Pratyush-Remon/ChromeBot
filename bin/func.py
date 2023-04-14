@@ -7,9 +7,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 options = Options()
 options.add_experimental_option("detach", True)
 
-def get_links():
+
+
+def get_links(str):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.get("https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/2/asc/1/")
+    driver.get(str)
     table_elem = driver.find_element(By.ID, "sites_tbl")
     link_elems = table_elem.find_elements(By.TAG_NAME, "a")
     links = [elem.get_attribute("href") for elem in link_elems if "view/sites" in elem.get_attribute("href")]
@@ -36,8 +38,9 @@ def save_links_to_file(links):
     with open(file_name, "w") as f:
         f.write("\n".join(links))
     return file_name
+addr = "https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/2/asc/1/#2"
 
-links = get_links()
+links = get_links(addr)
 unique_links = remove_duplicates(links)
 file_name = save_links_to_file(unique_links)
 print(f"Links saved to file: {file_name}")
