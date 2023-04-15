@@ -7,43 +7,53 @@ from time import sleep
 options = Options()
 options.add_experimental_option("detach", True)
 
+def init_driver():
+        driver = webdriver.Chrome(service=Service(
+        ChromeDriverManager().install()), options=options)
+        return driver
+    
 
 
-def get_links(str):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+def get_links(driver,str):
     driver.get(str)
     table_elem = driver.find_element(By.ID, "sites_tbl")
     link_elems = table_elem.find_elements(By.TAG_NAME, "a")
-    links = [elem.get_attribute("href") for elem in link_elems if "view/sites" in elem.get_attribute("href")]
-    driver.quit()
+    links = [elem.get_attribute(
+        "href") for elem in link_elems if "view/sites" in elem.get_attribute("href")]
     return links
 
-def remove_duplicates(links):
+
+def remove_duplicates(links):   
     unique_links = []
     for link in links:
         if link not in unique_links:
             unique_links.append(link)
     return unique_links
 
-def click_table_button(addr, button_num):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+def click_table_button(driver,addr, start,end):
     driver.get(addr)
-    button_elem = driver.find_element(By.CSS_SELECTOR, f"a[href='#{button_num}']")
+    button_elem = driver.find_element(
+        By.CSS_SELECTOR, f"a[href='#{start}']")
     button_elem.click()
     sleep(4)  # Wait for table to update (adjust time as necessary)
     click_im_human_button(driver)
     sleep(4)
-    i=1
-    while(i!=5):
+    while (start != end+1):
         sleep(4)
-        click_table_button2(driver,i)
-        i+=1
+        click_table_button2(driver, start)
+        start += 1
 
 
-def click_table_button2(driver,button_numup):
-    button_elem = driver.find_element(By.CSS_SELECTOR, f"a[href='#{button_numup}']")
+def click_table_button2(driver, start):
+    button_elem = driver.find_element(By.CSS_SELECTOR, f"a[href='#{start}']")
+    links = get_links(addr)
+    unique_links = remove_duplicates(links)
+    file_name = save_links_to_file(unique_links)
+    print(f"Links saved to file: {file_name}")
     button_elem.click()
     sleep(4)  # Wait for table to update (adjust time as necessary)
+
 
 def save_links_to_file(links):
     import os
@@ -59,17 +69,35 @@ def save_links_to_file(links):
         for link in links:
             parts = link.split("/")
             cleaned_link = "/".join([parts[0], "", "", parts[6]])
-            f.write(cleaned_link + "\n")
+            part = list(cleaned_link)
+            i = 0
+
+            shash_count = 0
+
+            final_link = ""
+
+            length = len(part)
+            while (i < length):
+                if part[i] == "/":
+                    shash_count += 1
+
+                if shash_count == 2:
+                    i += 1
+                    shash_count += 1
+
+                final_link += part[i]
+
+                i += 1
+
+            f.write(final_link + "\n")
     return file_name
+
+
 def click_im_human_button(driver):
     im_human_button = driver.find_element(By.ID, "captcha_submit")
     im_human_button.click()
 
-addr = "https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/2/asc/1/#2"
 
-links = get_links(addr)
-unique_links = remove_duplicates(links)
-file_name = save_links_to_file(unique_links)
-print(f"Links saved to file: {file_name}")
-click_table_button(addr,2)
-click_im_human_button()
+addr = "https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/2/asc/1/#2"
+def start(a,b):
+    click_table_button(addr,a,b)
