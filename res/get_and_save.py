@@ -1,28 +1,27 @@
-import undetected_chromedriver as uc
+from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
+
 options = Options()
-# options.add_experimental_option("detach", True)
+options.add_experimental_option("detach", True)
 
 def init_driver():
-    driver = uc.Chrome(service=Service(), options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
-
 
 def get_links(driver):
     table_elem = driver.find_element(By.ID, "sites_tbl")
-    sleep(2)
     link_elems = table_elem.find_elements(By.TAG_NAME, "a")
-    sleep(2)
-    links = [elem.get_attribute("href") for elem in link_elems 
-             if "/" in elem.get_attribute("href") 
-             and "/info" not in elem.get_attribute("href") 
-             and "/view" not in elem.get_attribute("href") 
-             and "/diagram" not in elem.get_attribute("href")]
-    return links
+    links_text = [elem.text for elem in link_elems 
+                  if "/" in elem.get_attribute("href") 
+                  and not any(sub in elem.get_attribute("href") for sub in ["/info", "/view", "/diagram"])
+                  and elem.text]
+    return links_text
+
+
 
 
 def remove_duplicates(links):   
@@ -78,13 +77,15 @@ def save_links_to_file(links):
 
 
 def click_im_human_button(driver):
-    im_human_button = driver.find_element(By.ID, "captcha_submit")
-    im_human_button.click()
-
+    try:
+        im_human_button = driver.find_element(By.ID, "captcha_submit")
+        im_human_button.click()
+    except:
+        pass
 
 def start(a, b):
     driver = init_driver()
-    addr = "https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/2/asc/1/"
+    addr = "https://myip.ms/browse/sites/1/ipID/23.227.38.0/ipIDii/23.227.38.255/sort/6/asc/1#sites_tbl_top"
     click_table_button(driver, addr, a, b)
     driver.quit()
 
